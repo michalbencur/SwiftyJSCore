@@ -1,10 +1,10 @@
 # SwiftyJSCore
 
-*SwiftyJSCore* wraps *JavaScriptCore* Framework and provides a convenient way to call JavaScript
-functions from Swift, supporting asynchronous functions (Promise) and decoding values
-to `Codable` types.
+*SwiftyJSCore* wraps *JavaScriptCore* Framework and provides a convenient way
+to call JavaScript functions from Swift, supporting asynchronous functions/promises
+and decoding values to `Codable` types.
 
-h3. Example:
+### Example
 
 JavaScript:
 ```javascript
