@@ -52,11 +52,11 @@ final class SwiftyJSCoreTests: XCTestCase {
     func testException() async throws {
         do {
             let _: Int = try await interpreter.call(function: "testException")
+            XCTFail("expected exception not thrown")
         } catch JSError.exception(let name, let message) {
             XCTAssertEqual(name, "TypeError")
             XCTAssertEqual(message, "TestError")
             return
         }
-        XCTFail("expected exception not thrown")
     }
 }
