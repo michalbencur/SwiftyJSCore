@@ -42,26 +42,3 @@ extension Double: JSConvertable {
         return value.toDouble()
     }
 }
-
-extension JSConvertable where T: Decodable {
-    public static func js_convert(_ value: JSValue) throws -> T {
-        guard let json = value.context.globalObject.objectForKeyedSubscript("JSON"),
-              let stringify = json.objectForKeyedSubscript("stringify"),
-              !stringify.isUndefined else {
-            fatalError("JSON.stringify not found")
-        }
-        
-        guard let jsonString = stringify.call(withArguments: [value]).toString(),
-              let jsonData = jsonString.data(using: .utf8)
-        else {
-            throw JSError.json(description: "JSON.stringify failed")
-        }
-
-        do {
-            let decoder = JSONDecoder()
-            return try decoder.decode(T.self, from: jsonData)
-        } catch let error {
-            throw JSError.json(description: "\(error)")
-        }
-    }
-}

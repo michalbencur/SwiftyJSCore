@@ -37,7 +37,37 @@ public actor JSInterpreter {
         context.setObject(object, forKeyedSubscript: key as NSString)
     }
     
-    public func call<T: JSConvertable>(function: String, arguments: [Any] = []) async throws -> T {
+    public func eval<T: Decodable>(code: String) async throws -> T {
+        let value = try await _eval(code: code)
+        return try value.js_convert()
+    }
+    
+    public func eval(code: String) async throws {
+        _ = try await _eval(code: code)
+    }
+    
+    public func call<T: Decodable>(function: String, arguments: [Any] = []) async throws -> T {
+        let value = try await _call(function: function, arguments: arguments)
+        return try value.js_convert()
+    }
+    
+    public func call(function: String, arguments: [Any] = []) async throws {
+        _ = try await _call(function: function, arguments: arguments)
+    }
+
+    // MARK: -
+    
+    private func _eval(code: String) async throws -> JSValue {
+        context.exception = nil
+        guard let value = context.evaluateScript(code) else {
+            throw JSError.functionCallFailed
+        }
+        let valueAfterPromise = try await waitForPromise(value)
+        try handleException(function: "eval")
+        return valueAfterPromise
+    }
+
+    private func _call(function: String, arguments: [Any]) async throws -> JSValue {
         guard let fn = javascriptObject(name: function) else {
             throw JSError.missingFunction
         }
@@ -47,29 +77,9 @@ public actor JSInterpreter {
         }
         let valueAfterPromise = try await waitForPromise(value)
         try handleException(function: function)
-        return try T.js_convert(valueAfterPromise) as! T
+        return valueAfterPromise
     }
 
-    public func eval<T: JSConvertable>(code: String) async throws -> T {
-        context.exception = nil
-        guard let value = context.evaluateScript(code) else {
-            throw JSError.functionCallFailed
-        }
-        let valueAfterPromise = try await waitForPromise(value)
-        try handleException(function: "eval")
-        return try T.js_convert(valueAfterPromise) as! T
-    }
-
-    public func call(function: String, arguments: [Any] = []) async throws {
-        _ = try await call(function: function, arguments: arguments) as JSVoid
-    }
-
-    public func eval(code: String) async throws {
-        _ = try await eval(code: code) as JSVoid
-    }
-
-    // MARK: -
-    
     private func handleException(function: String) throws {
         if let exception = context.exception {
             throw Self.error(from: exception)

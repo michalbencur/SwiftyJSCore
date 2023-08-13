@@ -1,9 +1,7 @@
 import XCTest
 @testable import SwiftyJSCore
 
-struct TestEntity: Codable, JSConvertable {
-    typealias T = TestEntity
-    
+struct TestEntity: Codable {    
     let id: Int
     let name: String
 }
