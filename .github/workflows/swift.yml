@@ -19,6 +19,11 @@ jobs:
         swift: ["5.8"]
 
     steps:
+    - uses: swift-actions/setup-swift@v1
+      with:
+        swift-version: "5.8"
+    - name: Get swift version
+      run: swift --version
     - uses: actions/checkout@v3
     - name: Build
       run: swift build -v
