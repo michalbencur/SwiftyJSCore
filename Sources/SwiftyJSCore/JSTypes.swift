@@ -22,3 +22,5 @@ public protocol JSConvertable {
     associatedtype T
     static func js_convert(_ value: JSValue) throws -> T
 }
+
+public typealias JSFetchType = (URLRequest) async throws -> (Data, URLResponse)

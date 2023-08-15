@@ -41,3 +41,7 @@ extension Encodable {
         }
     }
 }
+
+public func jsFetch(request: URLRequest) async throws -> (Data, URLResponse) {
+    return try await URLSession.shared.data(for: request)
+}

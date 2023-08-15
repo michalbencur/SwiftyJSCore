@@ -7,6 +7,7 @@ to call JavaScript functions from Swift.
 - asynchronous functions/promises mapped from JS to Swift
 - encoding and decoding `Codable` types in both directions
 - exception handling
+- basics of Fetch API supporting json() response 
 
 ### Example
 
