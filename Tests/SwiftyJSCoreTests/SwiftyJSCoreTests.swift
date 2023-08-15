@@ -35,7 +35,7 @@ final class SwiftyJSCoreTests: XCTestCase {
         try await interpreter.call(function: "testNoReturnValue")
         XCTAssertEqual(logger.lastLog, "log: testNoReturnValue called")
     }
-
+    
     func testEval() async throws {
         logger.lastLog = ""
         try await interpreter.eval("console.log(\"8+13=\", 8+13)")
@@ -48,23 +48,23 @@ final class SwiftyJSCoreTests: XCTestCase {
         let sum: Int = try await interpreter.eval("thirteen+8")
         XCTAssertEqual(sum, 21)
     }
-
+    
     func testReturnString() async throws {
         let string: String = try await interpreter.call(function: "testString")
         XCTAssertEqual(string, "Foobar")
     }
-
+    
     func testJSExportArgument() async throws {
         let string: String = try await interpreter.call(function: "testArgument", arguments: [TestObject()])
         XCTAssertEqual(string, "Ferdinand")
-
+        
     }
     
     func testAsync() async throws {
         let entity: TestEntity = try await interpreter.call(
             function: "testAsync",
             arguments: [TestEntity(id: 123, name: "Foobar")])
-
+        
         XCTAssertEqual(entity.id, 123)
         XCTAssertEqual(entity.name, "Test")
     }

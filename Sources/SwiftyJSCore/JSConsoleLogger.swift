@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  JSConsoleLogger.swift
 //  
 //
 //  Created by Michal Bencur on 13.08.23.

@@ -11,15 +11,18 @@ import JavaScriptCore
 public actor JSInterpreter {
     
     let logger: JSLogger
-    var context: JSContext!
+    let fetch: JSFetchType
+    let context: JSContext
 
-    public init(logger: JSLogger = JSConsoleLogger()) async throws {
+    public init(logger: JSLogger = JSConsoleLogger(), fetch: @escaping JSFetchType = jsFetch) async throws {
         logger.log("JSInterpreter init")
         self.logger = logger
+        self.fetch = fetch
         self.context = JSContext()
         try await setupExceptionHandler()
         try await setupGlobal()
         try await setupConsole()
+        try await setupFetch()
     }
 
     deinit {
@@ -83,10 +86,11 @@ public actor JSInterpreter {
 
     private func convertArguments(arguments: [Any]) throws -> [Any] {
         return try arguments.map { arg in
-            if let arg = arg as? JSExport {
+            if let arg = arg as? JSValue {
                 return arg
-            }
-            if let arg = arg as? Encodable {
+            } else if let arg = arg as? JSExport {
+                return arg
+            } else if let arg = arg as? Encodable {
                 return try arg.js_convertToPropertyList()
             }
             throw JSError.typeError
@@ -133,44 +137,5 @@ public actor JSInterpreter {
             }
         }
         return object
-    }
-    
-    // MARK: -
-        
-    private func setupGlobal() async throws {
-        _ = context.evaluateScript("""
-                var global = this;
-                var window = this;
-            """)
-    }
-    
-    private func setupConsole() async throws {
-        for method in ["log", "trace", "info", "warn", "error", "dir"] {
-            let logger = logger
-            let consoleFunc: @convention(block) () -> Void = {
-                let message = JSContext.currentArguments()!.map { "\($0)"}.joined()
-                logger.log("\(method): \(message)")
-            }
-            let console = context.objectForKeyedSubscript("console")
-            console?.setObject(unsafeBitCast(consoleFunc, to: AnyObject.self), forKeyedSubscript: method as NSString)
-        }
-    }
-    
-    private func setupExceptionHandler() async throws {
-        let logger = logger
-        let handler: ((JSContext?, JSValue?) -> Void) = { context, exception in
-            
-            context?.exception = exception
-            
-            if let exception = exception,
-               let stacktrace = exception.objectForKeyedSubscript("stack") {
-                logger.log("error: \(exception) at \(stacktrace)")
-            } else if let exception = exception {
-                logger.log("error: \(exception)")
-            } else {
-                logger.log("error: nil")
-            }
-        }
-        context.exceptionHandler = handler
     }
 }
