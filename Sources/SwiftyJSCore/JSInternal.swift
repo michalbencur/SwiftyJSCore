@@ -29,3 +29,15 @@ extension JSValue {
         }
     }
 }
+
+extension Encodable {
+    func js_convertToPropertyList() throws -> Any {
+        do {
+            let encoder = PropertyListEncoder()
+            let data = try encoder.encode(self)
+            return try PropertyListSerialization.propertyList(from: data, format: .none)
+        } catch {
+            fatalError()
+        }
+    }
+}

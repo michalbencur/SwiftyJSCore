@@ -37,12 +37,12 @@ public actor JSInterpreter {
         context.setObject(object, forKeyedSubscript: key as NSString)
     }
     
-    public func eval<T: Decodable>(code: String) async throws -> T {
+    public func eval<T: Decodable>(_ code: String) async throws -> T {
         let value = try await _eval(code: code)
         return try value.js_convert()
     }
     
-    public func eval(code: String) async throws {
+    public func eval(_ code: String) async throws {
         _ = try await _eval(code: code)
     }
     
@@ -71,8 +71,9 @@ public actor JSInterpreter {
         guard let fn = javascriptObject(name: function) else {
             throw JSError.missingFunction
         }
+        let convertedArguments = try convertArguments(arguments: arguments)
         context.exception = nil
-        guard let value = fn.call(withArguments: arguments) else {
+        guard let value = fn.call(withArguments: convertedArguments) else {
             throw JSError.functionCallFailed
         }
         let valueAfterPromise = try await waitForPromise(value)
@@ -80,6 +81,18 @@ public actor JSInterpreter {
         return valueAfterPromise
     }
 
+    private func convertArguments(arguments: [Any]) throws -> [Any] {
+        return try arguments.map { arg in
+            if let arg = arg as? JSExport {
+                return arg
+            }
+            if let arg = arg as? Encodable {
+                return try arg.js_convertToPropertyList()
+            }
+            throw JSError.typeError
+        }
+    }
+    
     private func handleException(function: String) throws {
         if let exception = context.exception {
             throw Self.error(from: exception)

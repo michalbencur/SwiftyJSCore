@@ -8,9 +8,13 @@ var testString = () => {
     return "Foobar";
 }
 
-var testAsync = async () => {
+var testArgument = (arg) => {
+    return arg.getName();
+}
+
+var testAsync = async (arg) => {
     return {
-        "id": 123,
+        "id": arg.id,
         "name": "Test"
     }
 }
