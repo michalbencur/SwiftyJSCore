@@ -85,16 +85,20 @@ public actor JSInterpreter {
     }
 
     private func convertArguments(arguments: [Any]) throws -> [Any] {
-        return try arguments.map { arg in
-            if let arg = arg as? JSValue {
-                return arg
-            } else if let arg = arg as? JSExport {
-                return arg
-            } else if let arg = arg as? Encodable {
-                return try arg.js_convertToPropertyList()
-            }
-            throw JSError.typeError
+        return try arguments.map { try convertArgument($0) }
+    }
+    
+    private func convertArgument(_ argument: Any) throws -> Any {
+        if let argument = argument as? JSValue {
+            return argument
+        } else if let argument = argument as? JSExport {
+            return argument
+        } else if let argument = argument as? Encodable {
+            return try argument.js_convertToPropertyList()
+        } else if let argument = argument as? [String: Any] {
+            return try argument.mapValues { try convertArgument($0) }
         }
+        throw JSError.typeError
     }
     
     private func handleException(function: String) throws {
