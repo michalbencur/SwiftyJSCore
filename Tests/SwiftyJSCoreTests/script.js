@@ -12,6 +12,15 @@ var testArgument = (arg) => {
     return arg.getName();
 }
 
+var testArguments = (arg) => {
+    if (arg.configuration.title != "Cool title") {
+        throw TypeError("arg.configuration.title != Cool title")
+    }
+    if (arg.test.id != 123) {
+        throw TypeError("arg.test.id != 123")
+    }
+}
+
 var testAsync = async (arg) => {
     return {
         "id": arg.id,
@@ -47,7 +56,7 @@ var testPOSTFetch = async () => {
         body: JSON.stringify({ "id": 123, "name": "Foobar" })
     });
     if (response.status != 201) {
-        throw Error("Response status not 200")
+        throw Error("Response status not 201")
     }
     var json = await response.json();
     return json.name;

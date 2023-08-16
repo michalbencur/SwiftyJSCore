@@ -43,6 +43,15 @@ final class SwiftyJSCoreTests: XCTestCase {
         XCTAssertEqual(logger.lastLog, "log: 8+13=21")
     }
     
+    func testArguments() async throws {
+        let test = TestEntity(id: 123, name: "Test")
+        let arg = [
+            "configuration": ["title": "Cool title"],
+            "test": test
+        ] as [String : Any]
+        try await interpreter.call(function: "testArguments", arguments: [arg])
+    }
+    
     func testSetObject() async throws {
         try await interpreter.setObject(13, forKey: "thirteen")
         let sum: Int = try await interpreter.eval("thirteen+8")
