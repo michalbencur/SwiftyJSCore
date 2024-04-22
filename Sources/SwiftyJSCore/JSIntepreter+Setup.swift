@@ -9,14 +9,14 @@ import Foundation
 import JavaScriptCore
 
 extension JSInterpreter {
-    func setupGlobal() async throws {
+    func setupGlobal() throws {
         _ = context.evaluateScript("""
                 var global = this;
                 var window = this;
             """)
     }
     
-    func setupConsole() async throws {
+    func setupConsole() throws {
         for method in ["log", "trace", "info", "warn", "error", "dir"] {
             let logger = logger
             let consoleFunc: @convention(block) () -> Void = {
@@ -28,7 +28,7 @@ extension JSInterpreter {
         }
     }
     
-    func setupExceptionHandler() async throws {
+    func setupExceptionHandler() throws {
         let logger = logger
         let handler: ((JSContext?, JSValue?) -> Void) = { context, exception in
             

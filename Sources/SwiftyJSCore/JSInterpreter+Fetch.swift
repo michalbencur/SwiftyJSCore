@@ -9,7 +9,7 @@ import Foundation
 import JavaScriptCore
 
 extension JSInterpreter {
-    func setupFetch() async throws {
+    func setupFetch() throws {
         let fetch = fetch
         let fetchFunc: @convention(block) () -> JSValue = {
             let args = JSContext.currentArguments()!
