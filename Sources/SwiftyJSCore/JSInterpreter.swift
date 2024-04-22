@@ -19,10 +19,10 @@ public actor JSInterpreter {
         self.logger = logger
         self.fetch = fetch
         self.context = JSContext()
-        try await setupExceptionHandler()
-        try await setupGlobal()
-        try await setupConsole()
-        try await setupFetch()
+        try setupExceptionHandler()
+        try setupGlobal()
+        try setupConsole()
+        try setupFetch()
     }
 
     deinit {
