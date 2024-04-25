@@ -9,6 +9,11 @@ to call JavaScript functions from Swift.
 - exception handling
 - basics of Fetch API supporting json() response 
 
+> [!NOTE]
+> If your application targets iOS and performance is important to you, consider using WKWebView.
+> WKWebView, running in a separate process not having security issues, uses JIT compiler making JS
+> considerably faster compared to JavaScriptCore.
+
 ### Example
 
 JavaScript:
