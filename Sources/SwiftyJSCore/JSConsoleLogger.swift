@@ -7,7 +7,7 @@
 
 import Foundation
 
-public class JSConsoleLogger: JSLogger {
+final public class JSConsoleLogger: JSLogger {
     public init() {
     }
     

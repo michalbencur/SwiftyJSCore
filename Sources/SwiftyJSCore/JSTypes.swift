@@ -5,9 +5,9 @@
 //  Created by Michal Bencur on 12.08.23.
 //
 
-import JavaScriptCore
+@preconcurrency import JavaScriptCore
 
-public protocol JSLogger {
+public protocol JSLogger: Sendable {
     func log(_ string: String)
 }
 
@@ -23,4 +23,4 @@ public protocol JSConvertable {
     static func js_convert(_ value: JSValue) throws -> T
 }
 
-public typealias JSFetchType = (URLRequest) async throws -> (Data, URLResponse)
+public typealias JSFetchType = @Sendable (URLRequest) async throws -> (Data, URLResponse)
