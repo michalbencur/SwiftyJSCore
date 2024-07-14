@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import JavaScriptCore
+@preconcurrency import JavaScriptCore
 
 extension JSInterpreter {
     func setupFetch() throws {

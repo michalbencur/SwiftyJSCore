@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "SwiftyJSCore",
     platforms: [
-        .macOS(.v10_15),
+        .macOS(.v12),
         .iOS(.v13),
         .tvOS(.v13)
     ],
@@ -20,10 +20,13 @@ let package = Package(
     targets: [
         .target(
             name: "SwiftyJSCore",
-            dependencies: []),
+            dependencies: [],
+            swiftSettings: [.enableExperimentalFeature("StrictConcurrency")]
+            ),
         .testTarget(
             name: "SwiftyJSCoreTests",
             dependencies: ["SwiftyJSCore"],
-            resources: [.process("script.js")]),
+            resources: [.process("script.js")]
+            ),
     ]
 )

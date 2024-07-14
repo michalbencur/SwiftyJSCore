@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import JavaScriptCore
+@preconcurrency import JavaScriptCore
 
 public actor JSInterpreter {
     

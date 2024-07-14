@@ -1,8 +1,8 @@
 import Foundation
 import SwiftyJSCore
 
-class Logger: JSLogger {
-    var lastLog: String?
+final class Logger: JSLogger {
+    internal var lastLog: String?
 
     func log(_ string: String) {
         lastLog = string
