@@ -1,4 +1,4 @@
-// swift-tools-version: 5.8
+// swift-tools-version: 5.10
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "SwiftyJSCore",
     platforms: [
-        .macOS(.v12),
+        .macOS(.v14),
         .iOS(.v13),
         .tvOS(.v13)
     ],
@@ -26,7 +26,7 @@ let package = Package(
         .testTarget(
             name: "SwiftyJSCoreTests",
             dependencies: ["SwiftyJSCore"],
-            resources: [.process("script.js")]
+            resources: [.process("script.js"), .process("swift-data.js")]
             ),
     ]
 )

@@ -37,9 +37,24 @@ extension Encodable {
             let data = try encoder.encode(self)
             return try PropertyListSerialization.propertyList(from: data, format: .none)
         } catch {
-            fatalError()
+            fatalError(error.localizedDescription)
         }
     }
+}
+
+func convertToJSCoreCompatible(_ argument: Any) throws -> Any {
+    if let argument = argument as? Int {
+        return argument
+    } else if let argument = argument as? JSValue {
+        return argument
+    } else if let argument = argument as? JSExport {
+        return argument
+    } else if let argument = argument as? Encodable {
+        return try argument.js_convertToPropertyList()
+    } else if let argument = argument as? [String: Any] {
+        return try argument.mapValues { try convertToJSCoreCompatible($0) }
+    }
+    throw JSError.typeError
 }
 
 @Sendable public func jsFetch(request: URLRequest) async throws -> (Data, URLResponse) {

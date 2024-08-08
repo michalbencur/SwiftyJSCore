@@ -4,7 +4,7 @@
 to call JavaScript functions from Swift.
 
 *SwiftyJSCore* supports:
-- asynchronous functions/promises mapped from JS to Swift
+- asynchronous functions/promises mapped in both directions
 - encoding and decoding `Codable` types in both directions
 - exception handling
 - basics of Fetch API supporting json() response 
@@ -15,6 +15,8 @@ to call JavaScript functions from Swift.
 > considerably faster compared to JavaScriptCore.
 
 ### Example
+
+SwiftyJSCore's APIs is concurrent, abstracting functions calls and promises to the same async API.
 
 JavaScript:
 ```javascript
@@ -62,5 +64,36 @@ do {
 } catch JSError.exception(let name, let message) {
     assert(name, "TypeError")
     assert(message, "TestError")
+}
+```
+
+### Swift async calls from JavaScript
+
+Use `wrapAsyncInJSPromise` in your JSExport classes to export Swift async functions to JavaScript.
+
+Check unit tests for an example using SwiftData.
+
+JS
+```
+var fetchPostsForUser = async (id, db) => {
+    const user = await db.fetchUser(id);
+    return user.posts;
+};
+```
+
+Swift
+```
+@objc protocol JSDatabaseAPIProtocol: JSExport {
+    @objc func fetchUser(_ id: Int) -> JSValue
+}
+
+class JSDatabaseAPI: NSObject, JSDatabaseAPIProtocol {
+    let db = DatabaseAPI()
+    
+    @objc func fetchUser(_ id: Int) -> JSValue {
+        return wrapAsyncInJSPromise {
+            return try await self.db.fetchUser(id: id)
+        }
+    }
 }
 ```
