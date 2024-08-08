@@ -22,7 +22,7 @@ var testString = () => {
     return "Foobar";
 }
 var testAsync = async (arg) => {
-    return { "id": arg.id, "name": "Test" }
+    return new Promise(resolve => resolve({ "id": arg.id, "name": "Test" }));
 }
 var testException = async () => {
     throw new TypeError("TestError");
