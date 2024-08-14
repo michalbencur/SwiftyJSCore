@@ -45,12 +45,20 @@ extension Encodable {
 func convertToJSCoreCompatible(_ argument: Any) throws -> Any {
     if let argument = argument as? Int {
         return argument
+    } else if let argument = argument as? Float {
+        return argument
+    } else if let argument = argument as? Double {
+        return argument
+    } else if let argument = argument as? String {
+        return argument
     } else if let argument = argument as? JSValue {
         return argument
     } else if let argument = argument as? JSExport {
         return argument
     } else if let argument = argument as? Encodable {
         return try argument.js_convertToPropertyList()
+    } else if let argument = argument as? [Any] {
+        return try argument.map { try convertToJSCoreCompatible($0) }
     } else if let argument = argument as? [String: Any] {
         return try argument.mapValues { try convertToJSCoreCompatible($0) }
     }
