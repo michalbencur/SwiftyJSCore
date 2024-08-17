@@ -5,26 +5,35 @@
 //  Created by Michal Bencur on 08.08.24.
 //
 
-@preconcurrency import JavaScriptCore
+import JavaScriptCore
 
-public func wrapAsyncInJSPromise<T: Encodable>(closure: @Sendable @escaping () async throws -> T) -> JSValue {
-    guard let context = JSContext.current() else {
-        fatalError("context not available anymore")
+fileprivate class ClosureWrapper<T>: @unchecked Sendable {
+    let closure: () async throws -> T
+    init(closure: @escaping () async throws -> T) {
+        self.closure = closure
     }
-    var resolveRef: JSValueRef?
-    var rejectRef: JSValueRef?
-    let promiseRef = JSObjectMakeDeferredPromise(context.jsGlobalContextRef, &resolveRef, &rejectRef, nil)
-    let resolve = JSValue(jsValueRef: resolveRef, in: context)
-    let reject = JSValue(jsValueRef: rejectRef, in: context)
-    let promise = JSValue(jsValueRef: promiseRef, in: context)
-    Task {
+    func call() async throws -> T {
+        return try await closure()
+    }
+}
+
+public func wrapAsyncInJSPromise<T: Encodable>(closure: @escaping () async throws -> T) -> JSValue {
+    guard let context = JSContext.current() else {
+        fatalError("JSContext not available.")
+    }
+    
+    let wrapper = ClosureWrapper(closure: closure)
+    let (promiseHolder, promise) = JSPromiseHolder.create(context: context)
+    
+    Task.detached {
         do {
-            let result = try await closure()
+            let result = try await wrapper.call()
             let json = try convertToJSCoreCompatible(result)
-            resolve?.call(withArguments: [json])
+            
+            await promiseHolder.resolve(withArguments: [json])
         } catch {
-            reject?.call(withArguments: [error.localizedDescription])
+            await promiseHolder.reject(withDescription: error.localizedDescription)
         }
     }
-    return promise!
+    return promise
 }

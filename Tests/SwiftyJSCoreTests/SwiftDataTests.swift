@@ -13,12 +13,12 @@ import JavaScriptCore
     @objc func fetchUser(_ id: Int) -> JSValue
 }
 
-class JSDatabaseAPI: NSObject, JSDatabaseAPIProtocol {
+final class JSDatabaseAPI: NSObject, JSDatabaseAPIProtocol {
     let db = DatabaseAPI()
     
     @objc func fetchUser(_ id: Int) -> JSValue {
         return wrapAsyncInJSPromise {
-            return try await self.db.fetchUser(id: id)
+            return try self.db.fetchUser(id: id)
         }
     }
 }

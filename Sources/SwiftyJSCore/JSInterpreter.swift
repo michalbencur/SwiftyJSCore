@@ -8,7 +8,7 @@
 import Foundation
 @preconcurrency import JavaScriptCore
 
-public actor JSInterpreter {
+public class JSInterpreter {
     
     let logger: JSLogger
     let fetch: JSFetchType
@@ -40,16 +40,16 @@ public actor JSInterpreter {
         context.setObject(object, forKeyedSubscript: key as NSString)
     }
     
-    public func eval<T: Decodable>(_ code: String) async throws -> T {
-        let value = try await _eval(code: code)
+    public func evaluate<T: Decodable>(_ code: String) async throws -> T {
+        let value = try await _evaluate(code: code)
         return try value.js_convert()
     }
     
-    public func eval(_ code: String) async throws {
-        _ = try await _eval(code: code)
+    public func evaluate(_ code: String) async throws {
+        _ = try await _evaluate(code: code)
     }
     
-    public func call<T: Decodable>(function: String, arguments: [Any] = []) async throws -> T {
+    public func call<T: Decodable>(function: String, arguments: [Any]) async throws -> T {
         let value = try await _call(function: function, arguments: arguments)
         return try value.js_convert()
     }
@@ -60,13 +60,13 @@ public actor JSInterpreter {
 
     // MARK: -
     
-    private func _eval(code: String) async throws -> JSValue {
+    private func _evaluate(code: String) async throws -> JSValue {
         context.exception = nil
         guard let value = context.evaluateScript(code) else {
             throw JSError.functionCallFailed
         }
         let valueAfterPromise = try await waitForPromise(value)
-        try handleException(function: "eval")
+        try handleException(function: "evaluate")
         return valueAfterPromise
     }
 

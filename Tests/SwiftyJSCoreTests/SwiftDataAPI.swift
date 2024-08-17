@@ -8,7 +8,7 @@
 import SwiftData
 import Foundation
 
-actor DatabaseAPI {
+class DatabaseAPI {
     let context: ModelContext
     
     init() {

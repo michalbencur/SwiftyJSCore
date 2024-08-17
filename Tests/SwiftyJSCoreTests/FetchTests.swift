@@ -8,17 +8,25 @@
 import XCTest
 @testable import SwiftyJSCore
 
+actor TestRequest {
+    static let shared = TestRequest()
+    var last: URLRequest?
+    init() {}
+    func set(last: URLRequest) {
+        self.last = last
+    }
+}
+
 final class FetchTests: XCTestCase {
 
     var interpreter: JSInterpreter!
-    var lastRequest: URLRequest?
-    
+        
     override func setUp() async throws {
         if let _ = interpreter {
             return
         }
-        interpreter = try await JSInterpreter(fetch: { [weak self] request in
-            self?.lastRequest = request
+        interpreter = try await JSInterpreter(fetch: { request in
+            await TestRequest.shared.set(last: request)
 
             let responseJSON = "{ \"id\": 123, \"name\": \"Foobar\" }"
             let statusCode = request.url?.path == "/test1.json" ? 200 :  201
@@ -30,14 +38,18 @@ final class FetchTests: XCTestCase {
     }
 
     func testFetch() async throws {
-        let n: Int = try await interpreter.call(function: "testFetch")
+        let n: Int = try await interpreter.call(function: "testFetch", arguments: [])
         XCTAssert(n == 123)
-        XCTAssertEqual(lastRequest!.httpMethod, "GET")
+        let lastRequest = await TestRequest.shared.last
+        XCTAssertNotNil(lastRequest)
+        XCTAssertEqual(lastRequest?.httpMethod, "GET")
     }
     
     func testPOSTFetch() async throws {
-        let string: String = try await interpreter.call(function: "testPOSTFetch")
+        let string: String = try await interpreter.call(function: "testPOSTFetch", arguments: [])
         XCTAssert(string == "Foobar")
+        let lastRequest = await TestRequest.shared.last
+        XCTAssertNotNil(lastRequest)
         XCTAssertEqual(lastRequest?.httpMethod, "POST")
         XCTAssertNotNil(lastRequest?.httpBody)
         XCTAssertEqual(lastRequest?.value(forHTTPHeaderField: "Content-Type"), "application/json")
@@ -45,7 +57,7 @@ final class FetchTests: XCTestCase {
     
     func testFetchError() async throws {
         do {
-            let _: String = try await interpreter.call(function: "testFetchMissingArguments")
+            let _: String = try await interpreter.call(function: "testFetchMissingArguments", arguments: [])
             XCTFail("expected exception not thrown")
         } catch JSError.exception(let name, let message) {
             XCTAssertEqual(name, "Error")
