@@ -21,12 +21,12 @@ actor JSPromiseHolder {
         let promise: JSValue! = JSValue(jsValueRef: promiseRef, in: context)
         return (JSPromiseHolder(resolve: resolve, reject: reject, context: context), promise)
     }
-    private init(resolve: sending JSValue, reject: sending JSValue, context: JSContext) {
+    private init(resolve: JSValue, reject: JSValue, context: JSContext) {
         self.resolve = resolve
         self.reject = reject
         self.context = context
     }
-    func resolve(withArguments arguments: sending [Any]) {
+    func resolve(withArguments arguments: [Any]) {
         resolve.call(withArguments: arguments)
     }
     func reject(withDescription description: String) {
