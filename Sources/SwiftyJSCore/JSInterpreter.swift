@@ -8,12 +8,17 @@
 import Foundation
 @preconcurrency import JavaScriptCore
 
+/// SwiftyJSCore's main API to control JavaScript virtual machine
 public class JSInterpreter {
     
     let logger: JSLogger
     let fetch: JSFetchType
     let context: JSContext
-
+    
+    /// JavaScript execution takes place within a context, and all JavaScript values are tied to a context.
+    /// - Parameters:
+    ///   - logger: optional logger implementation, used for console.log calls
+    ///   - fetch: optional fetch implementation, useful for unit tests
     public init(logger: JSLogger = JSConsoleLogger(), fetch: @escaping JSFetchType = jsFetch) async throws {
         logger.log("JSInterpreter init")
         self.logger = logger
@@ -29,31 +34,51 @@ public class JSInterpreter {
         logger.log("JSInterpreter deinit")
     }
     
+    /// Load and evaluate JavaScript code
+    /// - Parameter url: URL to a JavaScript script to load
     public func evaluateFile(url: URL) async throws {
         let code = try String(contentsOf: url, encoding: .utf8)
         context.exception = nil
         _ = context.evaluateScript(code, withSourceURL: URL(string: url.lastPathComponent))
         try handleException(function: "evaluateFile \(url.lastPathComponent)")
     }
-
+    
+    /// Set global variable in JavaScript context
+    /// - Parameters:
+    ///   - object: value to be set to
+    ///   - key: variable name
     public func setObject(_ object: Any!, forKey key: String) async throws {
         context.setObject(object, forKeyedSubscript: key as NSString)
     }
     
+    /// Evaluate JavaScript code
+    /// - Parameter code: JavaScript code
+    /// - Returns: returns result of the code execution, converted to a Decodable Swift class
     public func evaluate<T: Decodable>(_ code: String) async throws -> T {
         let value = try await _evaluate(code: code)
         return try value.js_convert()
     }
     
+    /// Evaluate JavaScript code
+    /// - Parameter code: JavaScript code
     public func evaluate(_ code: String) async throws {
         _ = try await _evaluate(code: code)
     }
     
+    /// Calls JavaScript function. Supports keypath, for example for an object named "weather", you can call its method "getTemperature", use "weather.getTemperature" as function name.
+    /// - Parameters:
+    ///   - function: Function name to call.
+    ///   - arguments: Arguments to pass to a function. Encodable objects are converted to JavaScript objects.
+    /// - Returns: returns result of the code execution, converted to a Decodable Swift class
     public func call<T: Decodable>(function: String, arguments: [Any]) async throws -> T {
         let value = try await _call(function: function, arguments: arguments)
         return try value.js_convert()
     }
     
+    /// Calls JavaScript function. Supports keypath, for example for an object named "weather", you can call its method "getTemperature", use "weather.getTemperature" as function name.
+    /// - Parameters:
+    ///   - function: Function name to call.
+    ///   - arguments: Arguments to pass to a function. Encodable objects are converted to JavaScript objects.
     public func call(function: String, arguments: [Any] = []) async throws {
         _ = try await _call(function: function, arguments: arguments)
     }

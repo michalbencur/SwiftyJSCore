@@ -7,7 +7,8 @@ to call JavaScript functions from Swift.
 - asynchronous functions/promises mapped in both directions
 - encoding and decoding `Codable` types in both directions
 - exception handling
-- basics of Fetch API supporting json() response 
+- basics of Fetch API supporting json() response
+- Swift 6 mode
 
 > [!NOTE]
 > If your application targets iOS and performance is important to you, consider using WKWebView.
@@ -67,7 +68,7 @@ do {
 }
 ```
 
-### Swift async calls from JavaScript
+### Swift async calls wrapped as JavaScript Promises
 
 Use `wrapAsyncInJSPromise` in your JSExport classes to export Swift async functions to JavaScript.
 

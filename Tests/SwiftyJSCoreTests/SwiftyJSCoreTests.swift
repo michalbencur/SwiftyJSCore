@@ -18,7 +18,7 @@ class TestObject: NSObject, TestObjectProtocol {
     }
     @objc func getNameAfterTimeout() -> JSValue {
         return wrapAsyncInJSPromise {
-            try await Task.sleep(for: .seconds(3.0))
+            try await Task.sleep(for: .seconds(1.0))
             return "Knuth"
         }
     }
@@ -86,7 +86,7 @@ final class SwiftyJSCoreTests: XCTestCase {
     }
 
     @MainActor func testAsyncToPromise() async throws {
-        let exp = expectation(description: "testAsyncToPromise calls async getNameAfterTimeout which sleeps for 3 seconds")
+        let exp = expectation(description: "testAsyncToPromise calls async getNameAfterTimeout which sleeps for 1 second")
         Task {
             try await interpreter.setObject(TestObject(), forKey: "testObject")
             let name: String = try await interpreter.call(function: "testAsyncToPromise", arguments: [])
@@ -99,8 +99,12 @@ final class SwiftyJSCoreTests: XCTestCase {
             XCTAssertEqual(testString, "Foobar")
         }
         
-        let result = await XCTWaiter.fulfillment(of: [exp], timeout: 3.5)
+        let result = await XCTWaiter.fulfillment(of: [exp], timeout: 1.5)
         XCTAssertEqual(result, XCTWaiter.Result.completed)
+        
+        // test JSInterpreter deallocation
+        interpreter = nil
+        XCTAssertEqual(logger.lastLog, "JSInterpreter deinit")
     }
 
     func testException() async throws {
