@@ -19,7 +19,7 @@ public class JSInterpreter {
     /// - Parameters:
     ///   - logger: optional logger implementation, used for console.log calls
     ///   - fetch: optional fetch implementation, useful for unit tests
-    public init(logger: JSLogger = JSConsoleLogger(), fetch: @escaping JSFetchType = jsFetch) async throws {
+    public init(logger: JSLogger = JSConsoleLogger(), fetch: @escaping JSFetchType = jsFetch) throws {
         logger.log("JSInterpreter init")
         self.logger = logger
         self.fetch = fetch
