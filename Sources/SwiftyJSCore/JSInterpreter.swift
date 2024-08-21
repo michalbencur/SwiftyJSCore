@@ -8,13 +8,18 @@
 import Foundation
 @preconcurrency import JavaScriptCore
 
-public actor JSInterpreter {
+/// SwiftyJSCore's main API to control JavaScript virtual machine
+public class JSInterpreter {
     
     let logger: JSLogger
     let fetch: JSFetchType
     let context: JSContext
-
-    public init(logger: JSLogger = JSConsoleLogger(), fetch: @escaping JSFetchType = jsFetch) async throws {
+    
+    /// JavaScript execution takes place within a context, and all JavaScript values are tied to a context.
+    /// - Parameters:
+    ///   - logger: optional logger implementation, used for console.log calls
+    ///   - fetch: optional fetch implementation, useful for unit tests
+    public init(logger: JSLogger = JSConsoleLogger(), fetch: @escaping JSFetchType = jsFetch) throws {
         logger.log("JSInterpreter init")
         self.logger = logger
         self.fetch = fetch
@@ -29,44 +34,64 @@ public actor JSInterpreter {
         logger.log("JSInterpreter deinit")
     }
     
+    /// Load and evaluate JavaScript code
+    /// - Parameter url: URL to a JavaScript script to load
     public func evaluateFile(url: URL) async throws {
         let code = try String(contentsOf: url, encoding: .utf8)
         context.exception = nil
         _ = context.evaluateScript(code, withSourceURL: URL(string: url.lastPathComponent))
         try handleException(function: "evaluateFile \(url.lastPathComponent)")
     }
-
+    
+    /// Set global variable in JavaScript context
+    /// - Parameters:
+    ///   - object: value to be set to
+    ///   - key: variable name
     public func setObject(_ object: Any!, forKey key: String) async throws {
         context.setObject(object, forKeyedSubscript: key as NSString)
     }
     
-    public func eval<T: Decodable>(_ code: String) async throws -> T {
-        let value = try await _eval(code: code)
+    /// Evaluate JavaScript code
+    /// - Parameter code: JavaScript code
+    /// - Returns: returns result of the code execution, converted to a Decodable Swift class
+    public func evaluate<T: Decodable>(_ code: String) async throws -> T {
+        let value = try await _evaluate(code: code)
         return try value.js_convert()
     }
     
-    public func eval(_ code: String) async throws {
-        _ = try await _eval(code: code)
+    /// Evaluate JavaScript code
+    /// - Parameter code: JavaScript code
+    public func evaluate(_ code: String) async throws {
+        _ = try await _evaluate(code: code)
     }
     
-    public func call<T: Decodable>(function: String, arguments: [Any] = []) async throws -> T {
+    /// Calls JavaScript function. Supports keypath, for example for an object named "weather", you can call its method "getTemperature", use "weather.getTemperature" as function name.
+    /// - Parameters:
+    ///   - function: Function name to call.
+    ///   - arguments: Arguments to pass to a function. Encodable objects are converted to JavaScript objects.
+    /// - Returns: returns result of the code execution, converted to a Decodable Swift class
+    public func call<T: Decodable>(function: String, arguments: [Any]) async throws -> T {
         let value = try await _call(function: function, arguments: arguments)
         return try value.js_convert()
     }
     
+    /// Calls JavaScript function. Supports keypath, for example for an object named "weather", you can call its method "getTemperature", use "weather.getTemperature" as function name.
+    /// - Parameters:
+    ///   - function: Function name to call.
+    ///   - arguments: Arguments to pass to a function. Encodable objects are converted to JavaScript objects.
     public func call(function: String, arguments: [Any] = []) async throws {
         _ = try await _call(function: function, arguments: arguments)
     }
 
     // MARK: -
     
-    private func _eval(code: String) async throws -> JSValue {
+    private func _evaluate(code: String) async throws -> JSValue {
         context.exception = nil
         guard let value = context.evaluateScript(code) else {
             throw JSError.functionCallFailed
         }
         let valueAfterPromise = try await waitForPromise(value)
-        try handleException(function: "eval")
+        try handleException(function: "evaluate")
         return valueAfterPromise
     }
 

@@ -6,11 +6,11 @@
 //
 
 import Foundation
-@preconcurrency import JavaScriptCore
+import JavaScriptCore
 
 extension JSInterpreter {
     func setupFetch() throws {
-        let fetch = fetch
+        let fetch = self.fetch
         let fetchFunc: @convention(block) () -> JSValue = {
             let args = JSContext.currentArguments()!
             let context = JSContext.current()!
@@ -30,21 +30,27 @@ extension JSInterpreter {
             if args.count > 1, let options = args[1] as? JSValue, options.isObject {
                 update(request: &request, with: options)
             }
-                        
-            return JSValue(newPromiseIn: context) { [request, fetch] resolve, reject in
-                Task {
-                    do {
-                        let (data, response) = try await fetch(request)
-                        let fetchResponse = JSFetchResponse(data: data, response: response, context: context)
-                        resolve?.call(withArguments: [fetchResponse])
-                    } catch (let error) {
-                        let exception = JSValue(newErrorFromMessage: error.localizedDescription, in: context)!
-                        reject?.call(withArguments: [exception])
-                    }
+            
+            let (promiseHolder, promise) = JSPromiseHolder.create(context: context)
+            
+            nonisolated(unsafe) let _context = context
+            Task { @MainActor in
+                do {
+                    let (data, response) = try await fetch(request)
+                    let fetchResponse = JSFetchResponse(data: data, response: response, context: _context)
+                    await promiseHolder.resolve(withArguments: [fetchResponse])
+                } catch (let error) {
+                    await promiseHolder.reject(withDescription: error.localizedDescription)
                 }
             }
+            
+            return promise
         }
         context.setObject(unsafeBitCast(fetchFunc, to: AnyObject.self), forKeyedSubscript: "fetch" as NSString)
+    }
+    
+    func convertFetchResponse(data: Data, response: URLResponse) -> JSFetchResponse {
+        return JSFetchResponse(data: data, response: response, context: context)
     }
 }
 
@@ -98,7 +104,7 @@ private func update(request: inout URLRequest, with options: JSValue) {
     func json() -> JSValue
 }
 
-class JSFetchResponse: NSObject, JSFetchResponseProtocol {
+class JSFetchResponse: NSObject, JSFetchResponseProtocol, @unchecked Sendable {
     let data: Data
     let response: URLResponse
     weak var context: JSContext?

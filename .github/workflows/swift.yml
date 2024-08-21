@@ -16,12 +16,12 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest]
-        swift: ["5"]
+        swift: ["6"]
 
     steps:
     - uses: swift-actions/setup-swift@v2
       with:
-        swift-version: "5"
+        swift-version: "6"
     - name: Get swift version
       run: swift --version
     - uses: actions/checkout@v4

@@ -12,6 +12,10 @@ var testArgument = (arg) => {
     return arg.getName();
 }
 
+var testAsyncToPromise = async () => {
+    return await testObject.getNameAfterTimeout();
+}
+
 var testArguments = (arg) => {
     if (arg.configuration.title != "Cool title") {
         throw TypeError("arg.configuration.title != Cool title")
