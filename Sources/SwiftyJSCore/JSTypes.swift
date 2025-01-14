@@ -16,6 +16,19 @@ public enum JSError: Error {
     case exception(name: String, message: String)
     case promise(value: JSValue)
     case json(description: String)
+    
+    public var errorDescription: String? {
+        switch self {
+        case .exception(let name, let message):
+            return "JSError \(name): \(message)"
+        case .promise(let value):
+            return "JSError \(value.debugDescription)"
+        case .json(let description):
+            return "JSError \(description)"
+        case .missingFunction, .functionCallFailed, .missingObject, .typeError:
+            return "JSError \(self.localizedDescription)"
+        }
+    }
 }
 
 public protocol JSConvertable {

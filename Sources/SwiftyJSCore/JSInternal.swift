@@ -45,6 +45,8 @@ extension Encodable {
 func convertToJSCoreCompatible(_ argument: Any) throws -> Any {
     if let argument = argument as? Int {
         return argument
+    } else if let argument = argument as? Bool {
+        return argument
     } else if let argument = argument as? Float {
         return argument
     } else if let argument = argument as? Double {

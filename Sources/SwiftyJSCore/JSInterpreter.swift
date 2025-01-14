@@ -67,20 +67,38 @@ public class JSInterpreter {
     
     /// Calls JavaScript function. Supports keypath, for example for an object named "weather", you can call its method "getTemperature", use "weather.getTemperature" as function name.
     /// - Parameters:
+    ///   - object: JSValue object to call function on. Defaults to JSC's context.globalObject
     ///   - function: Function name to call.
     ///   - arguments: Arguments to pass to a function. Encodable objects are converted to JavaScript objects.
     /// - Returns: returns result of the code execution, converted to a Decodable Swift class
-    public func call<T: Decodable>(function: String, arguments: [Any]) async throws -> T {
-        let value = try await _call(function: function, arguments: arguments)
+    public func call<T: Decodable>(object: JSValue? = nil, function: String, arguments: [Any]) async throws -> T {
+        let value = try await _call(rootObject: object, function: function, arguments: arguments)
         return try value.js_convert()
     }
-    
+
+    /// Calls JavaScript function. Supports keypath, for example for an object named "weather", you can call its method "getTemperature", use "weather.getTemperature" as function name.
+    /// - Parameters:
+    ///   - function: Function name to call.
+    ///   - arguments: Arguments to pass to a function. Encodable objects are converted to JavaScript objects.
+    /// - Returns: JSValue
+    public func callReturningValue(function: String, arguments: [Any]) async throws -> JSValue {
+        return try await _call(function: function, arguments: arguments)
+    }
+
     /// Calls JavaScript function. Supports keypath, for example for an object named "weather", you can call its method "getTemperature", use "weather.getTemperature" as function name.
     /// - Parameters:
     ///   - function: Function name to call.
     ///   - arguments: Arguments to pass to a function. Encodable objects are converted to JavaScript objects.
     public func call(function: String, arguments: [Any] = []) async throws {
         _ = try await _call(function: function, arguments: arguments)
+    }
+
+    /// Calls JavaScript function. Supports keypath, for example for an object named "weather", you can call its method "getTemperature", use "weather.getTemperature" as function name.
+    /// - Parameters:
+    ///   - function: Function name to call.
+    ///   - arguments: Arguments to pass to a function. Encodable objects are converted to JavaScript objects.
+    public func call(object: JSValue, function: String, arguments: [Any] = []) async throws {
+        _ = try await _call(rootObject: object, function: function, arguments: arguments)
     }
 
     // MARK: -
@@ -95,8 +113,8 @@ public class JSInterpreter {
         return valueAfterPromise
     }
 
-    private func _call(function: String, arguments: [Any]) async throws -> JSValue {
-        guard let fn = javascriptObject(name: function) else {
+    private func _call(rootObject: JSValue? = nil, function: String, arguments: [Any]) async throws -> JSValue {
+        guard let fn = javascriptObject(rootObject: rootObject, name: function) else {
             throw JSError.missingFunction
         }
         let convertedArguments = try convertArguments(arguments: arguments)
@@ -143,8 +161,9 @@ public class JSInterpreter {
         })
     }
     
-    private func javascriptObject(name: String) -> JSValue? {
-        var object = context.globalObject
+    private func javascriptObject(rootObject: JSValue?, name: String) -> JSValue? {
+        var object = rootObject ?? context.globalObject
+        assert(object != nil)
         for key in name.split(separator: ".") {
             if let o = object?.objectForKeyedSubscript(key), !o.isUndefined {
                 object = o
