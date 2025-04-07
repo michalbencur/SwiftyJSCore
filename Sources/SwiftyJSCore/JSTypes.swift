@@ -13,14 +13,18 @@ public protocol JSLogger: Sendable {
 
 public enum JSError: Error {
     case missingFunction, functionCallFailed, missingObject, typeError
-    case exception(name: String, message: String)
+    case exception(name: String, message: String, stack: String)
     case promise(value: JSValue)
     case json(description: String)
     
     public var errorDescription: String? {
+        return jsErrorDescription
+    }
+    
+    public var jsErrorDescription: String {
         switch self {
-        case .exception(let name, let message):
-            return "JSError \(name): \(message)"
+        case .exception(let name, let message, let stack):
+            return "JSError \(name): \(message) \(stack)"
         case .promise(let value):
             return "JSError \(value.debugDescription)"
         case .json(let description):

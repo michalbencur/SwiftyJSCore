@@ -138,11 +138,13 @@ public class JSInterpreter {
     }
     
     private static func error(from exception: JSValue) -> JSError {
-        let name = exception.objectForKeyedSubscript("name").toString()
-        let message = exception.objectForKeyedSubscript("message").toString()
+        let name = exception.objectForKeyedSubscript("name").toString() ?? "undefined"
+        let message = exception.objectForKeyedSubscript("message").toString() ?? "undefined"
+        let stack = exception.objectForKeyedSubscript("stack").toString() ?? "undefined"
         return JSError.exception(
-            name: name ?? "undefined",
-            message: message ?? "undefined")
+            name: name,
+            message: message,
+            stack: stack)
     }
     
     private func waitForPromise(_ value: JSValue) async throws -> JSValue {
