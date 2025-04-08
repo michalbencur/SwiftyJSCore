@@ -25,7 +25,7 @@ final class FetchTests: XCTestCase {
         if let _ = interpreter {
             return
         }
-        interpreter = try await JSInterpreter(fetch: { request in
+        interpreter = try JSInterpreter(fetch: { request in
             await TestRequest.shared.set(last: request)
 
             let responseJSON = "{ \"id\": 123, \"name\": \"Foobar\" }"
@@ -59,10 +59,9 @@ final class FetchTests: XCTestCase {
         do {
             let _: String = try await interpreter.call(function: "testFetchMissingArguments", arguments: [])
             XCTFail("expected exception not thrown")
-        } catch JSError.exception(let name, let message) {
+        } catch JSError.exception(let name, let message, _) {
             XCTAssertEqual(name, "Error")
             XCTAssertEqual(message, "fetch: missing arguments")
-            return
         }
     }
 }

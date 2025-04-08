@@ -33,7 +33,7 @@ final class SwiftyJSCoreTests: XCTestCase {
         if let _ = interpreter {
             return
         }
-        interpreter = try await JSInterpreter(logger: logger)
+        interpreter = try JSInterpreter(logger: logger)
         let url = Bundle.module.url(forResource: "script", withExtension: "js")!
         try await interpreter.evaluateFile(url: url)
     }
@@ -111,9 +111,11 @@ final class SwiftyJSCoreTests: XCTestCase {
         do {
             let _: Int = try await interpreter.call(function: "testException", arguments: [])
             XCTFail("expected exception not thrown")
-        } catch JSError.exception(let name, let message) {
+        } catch JSError.exception(let name, let message, let stack) {
             XCTAssertEqual(name, "TypeError")
             XCTAssertEqual(message, "TestError")
+            XCTAssert(!stack.isEmpty)
+            XCTAssert(stack == "@script.js:33:24\ntestException@script.js:32:28")
             return
         }
     }

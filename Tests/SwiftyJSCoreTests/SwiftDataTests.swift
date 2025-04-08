@@ -32,7 +32,7 @@ final class SwiftDataTests: XCTestCase {
         if let _ = interpreter {
             return
         }
-        interpreter = try await JSInterpreter(logger: logger)
+        interpreter = try JSInterpreter(logger: logger)
         let url = Bundle.module.url(forResource: "swift-data", withExtension: "js")!
         try await interpreter.evaluateFile(url: url)
     }

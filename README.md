@@ -62,7 +62,7 @@ assert(entity.id == 123 && entity.name == "Test")
 
 do {
     let _: Int = try await interpreter.call(function: "testException")
-} catch JSError.exception(let name, let message) {
+} catch JSError.exception(let name, let message, let stack) {
     assert(name, "TypeError")
     assert(message, "TestError")
 }
