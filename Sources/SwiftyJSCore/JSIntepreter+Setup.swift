@@ -17,11 +17,17 @@ extension JSInterpreter {
     }
     
     func setupConsole() throws {
-        for method in ["log", "trace", "info", "warn", "error", "dir"] {
+        for method in ["log", "trace", "debug", "info", "warn", "error", "dir"] {
             let logger = logger
             let consoleFunc: @convention(block) () -> Void = {
-                let message = JSContext.currentArguments()!.map { "\($0)"}.joined()
+                let message = JSContext.currentArguments()!.map { "\($0)" }.joined()
+#if DEBUG
                 logger.log("\(method): \(message)")
+#else
+                if method != "debug" {
+                    logger.log("\(method): \(message)")
+                }
+#endif
             }
             let console = context.objectForKeyedSubscript("console")
             console?.setObject(unsafeBitCast(consoleFunc, to: AnyObject.self), forKeyedSubscript: method as NSString)

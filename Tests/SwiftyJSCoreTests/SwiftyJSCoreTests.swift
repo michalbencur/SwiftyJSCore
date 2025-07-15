@@ -115,7 +115,7 @@ final class SwiftyJSCoreTests: XCTestCase {
             XCTAssertEqual(name, "TypeError")
             XCTAssertEqual(message, "TestError")
             XCTAssert(!stack.isEmpty)
-            XCTAssert(stack == "@script.js:33:24\ntestException@script.js:32:28")
+            XCTAssert(stack == "@script.js:34:24\ntestException@script.js:33:28")
             return
         }
     }

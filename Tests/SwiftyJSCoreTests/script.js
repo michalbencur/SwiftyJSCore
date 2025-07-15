@@ -1,4 +1,5 @@
 console.log("JS loading")
+console.debug("Debug log")
 
 var testNoReturnValue = () => {
     console.log("testNoReturnValue called");
