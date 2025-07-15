@@ -62,6 +62,17 @@ var testPOSTFetch = async () => {
     var json = await response.json();
     return json.name;
 }
+var testFetchText = async () => {
+    var response = await fetch("http://domain.net/test1.json");
+    if (response.status != 200) {
+        throw Error("Response status not 200")
+    }
+    if (!response.ok) {
+        throw Error("Response not OK")
+    }
+    var text = await response.text();
+    return text;
+}
 var testFetchMissingArguments = async () => {
     return await fetch();
 }

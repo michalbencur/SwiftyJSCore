@@ -102,6 +102,7 @@ private func update(request: inout URLRequest, with options: JSValue) {
     var url: String? { get }
     
     func json() -> JSValue
+    func text() -> JSValue
 }
 
 class JSFetchResponse: NSObject, JSFetchResponseProtocol, @unchecked Sendable {
@@ -148,6 +149,24 @@ class JSFetchResponse: NSObject, JSFetchResponseProtocol, @unchecked Sendable {
                 return
             }
             resolve?.call(withArguments: [json])
+        }
+    }
+
+    @objc func text() -> JSValue {
+        guard let context = context else {
+            return JSValue.init()
+        }
+        let data = data
+        return JSValue(newPromiseIn: context) { [weak context] resolve, reject in
+            guard let context = context else {
+                return
+            }
+            guard let textString = String(data: data, encoding: .utf8) else {
+                let exception = JSValue(newErrorFromMessage: "fetch: text() failed to decode data", in: context)!
+                reject?.call(withArguments: [exception])
+                return
+            }
+            resolve?.call(withArguments: [textString])
         }
     }
 }

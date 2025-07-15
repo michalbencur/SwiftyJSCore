@@ -55,6 +55,14 @@ final class FetchTests: XCTestCase {
         XCTAssertEqual(lastRequest?.value(forHTTPHeaderField: "Content-Type"), "application/json")
     }
     
+    func testFetchText() async throws {
+        let text: String = try await interpreter.call(function: "testFetchText", arguments: [])
+        XCTAssertEqual(text, "{ \"id\": 123, \"name\": \"Foobar\" }")
+        let lastRequest = await TestRequest.shared.last
+        XCTAssertNotNil(lastRequest)
+        XCTAssertEqual(lastRequest?.httpMethod, "GET")
+    }
+
     func testFetchError() async throws {
         do {
             let _: String = try await interpreter.call(function: "testFetchMissingArguments", arguments: [])
